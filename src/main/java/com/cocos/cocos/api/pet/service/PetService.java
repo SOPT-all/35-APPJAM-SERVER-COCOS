@@ -1,5 +1,6 @@
 package com.cocos.cocos.api.pet.service;
 
+import com.cocos.cocos.api.body.dto.response.BodyResponse;
 import com.cocos.cocos.api.pet.dto.request.PetCreateRequest;
 import com.cocos.cocos.api.pet.dto.request.PetUpdateRequest;
 import com.cocos.cocos.api.pet.dto.response.PetDiseaseResponse;
@@ -9,6 +10,8 @@ import com.cocos.cocos.api.pet.dto.response.PetSymptomResponse;
 import com.cocos.cocos.common.exception.CocosException;
 import com.cocos.cocos.db.animal.entity.Animal;
 import com.cocos.cocos.db.animal.repository.AnimalRepository;
+import com.cocos.cocos.db.body.entity.Body;
+import com.cocos.cocos.db.body.repository.BodyRepository;
 import com.cocos.cocos.db.breed.entity.Breed;
 import com.cocos.cocos.db.breed.repository.BreedRepository;
 import com.cocos.cocos.db.disease.entity.Disease;
@@ -33,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +52,7 @@ public class PetService {
     private final MemberRepository memberRepository;
     private final S3PresignClient s3PresignClient;
     private final Clock clock;
+    private final BodyRepository bodyRepository;
 
     //ToDo: yml에 추가하는 방향 고민 중
     private static final String PET_BASE_IMAGE_URL = "member/basePetImage.png";
@@ -152,9 +158,6 @@ public class PetService {
 
     @Transactional(readOnly = true)
     public PetResponse getPet(final String nickname, final Long memberId) {
-        if (nickname != null && !memberRepository.existsByNickname(nickname)) {
-            throw new CocosException(FailMessage.NOT_FOUND_MEMBER);
-        }
 
         //ToDo: 메소드로 통일시켜도 좋을 것 같음(이전 다른 곳에서 사용되었던 코드와 통일 시키는 것이 좋아보임)
         final Long selectedMemberId = (nickname != null)
@@ -190,6 +193,17 @@ public class PetService {
                         )
                 ).toList();
 
+        final List<Long> concernBodyIds = Stream.concat(
+                        symptoms.stream().map(Symptom::getBodyId),
+                        diseases.stream().map(Disease::getBodyId)
+                )
+                .filter(Objects::nonNull)
+                .distinct()
+                .limit(2)
+                .toList();
+
+        final List<Body> concernBodies = bodyRepository.findAllById(concernBodyIds);
+
         return PetResponse.of(
                 pet.getId(),
                 s3PresignClient.get(S3BucketType.MEMBER_DATA, pet.getImage()),
@@ -202,7 +216,8 @@ public class PetService {
                 animal.getId(),
                 animal.getName(),
                 diseases.stream().map(disease -> PetDiseaseResponse.of(disease.getId(), disease.getName())).toList(),
-                symptoms.stream().map(symptom -> PetSymptomResponse.of(symptom.getId(), symptom.getName())).toList()
+                symptoms.stream().map(symptom -> PetSymptomResponse.of(symptom.getId(), symptom.getName())).toList(),
+                concernBodies.stream().map(body -> BodyResponse.of(body.getId(), body.getName(), s3PresignClient.get(S3BucketType.APP_DATA, body.getImage()))).toList()
         );
     }
 
