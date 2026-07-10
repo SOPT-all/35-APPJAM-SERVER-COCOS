@@ -1,5 +1,6 @@
 package com.cocos.cocos.api.pet.dto.response;
 
+import com.cocos.cocos.api.body.dto.response.BodyResponse;
 import com.cocos.cocos.enums.pet.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -30,9 +31,11 @@ public record PetResponse(
         @Schema(description = "질병 리스트")
         List<PetDiseaseResponse> diseases,
         @Schema(description = "증상 리스트")
-        List<PetSymptomResponse> symptoms
+        List<PetSymptomResponse> symptoms,
+        @Schema(description = "관심 부위 리스트")
+        List<BodyResponse> concernBodies
 ) {
-    public static PetResponse of(final Long petId, final String petImage, final String petName, final Integer petAge, final LocalDate petBirthDate, final Gender petGender, final Long breedId, final String breed, final Long animalId, final String animal, final List<PetDiseaseResponse> diseases, final List<PetSymptomResponse> symptoms) {
-        return new PetResponse(petId, petImage, petName, petAge, petBirthDate, petGender, breedId, breed, animalId, animal, diseases, symptoms);
+        public static PetResponse of(final Long petId, final String petImage, final String petName, final Integer petAge, final LocalDate petBirthDate, final Gender petGender, final Long breedId, final String breed, final Long animalId, final String animal, final List<PetDiseaseResponse> diseases, final List<PetSymptomResponse> symptoms, List<BodyResponse> concernBodies) {
+                return new PetResponse(petId, petImage, petName, petAge, petBirthDate, petGender, breedId, breed, animalId, animal, diseases, symptoms, concernBodies);
     }
 }
