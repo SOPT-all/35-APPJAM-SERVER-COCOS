@@ -18,9 +18,9 @@ public class CorsConfig {
         //리소스를 허용할 URL 지정
         ArrayList<String> allowedOriginPatterns = new ArrayList<>();
         allowedOriginPatterns.add("http://localhost:5173");
-        allowedOriginPatterns.add("https://www.cocos.r-e.kr/");
-        allowedOriginPatterns.add("https://www.cocos-dev.r-e.kr");
-        allowedOriginPatterns.add("https://www.cocos-pet.kr/");
+        allowedOriginPatterns.add("https://dev.cocos.p-e.kr");
+        allowedOriginPatterns.add("https://www.cocos-dev.r-e.kr"); // [TODO] 삭제
+        allowedOriginPatterns.add("https://www.cocos-pet.kr");
         allowedOriginPatterns.add("https://cocos-frontend-seven.vercel.app");
         configuration.setAllowedOrigins(allowedOriginPatterns);
 
